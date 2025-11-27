@@ -2,10 +2,8 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-administrador',
-  imports: [],
+  standalone: true,
   templateUrl: './administrador.html',
-  styleUrl: './administrador.css',
+  styleUrls: ['./administrador.css']
 })
-export class Administrador {
-
-}
+export class Administrador {}
