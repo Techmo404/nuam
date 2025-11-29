@@ -18,27 +18,39 @@ export class LoginPage {
 
   constructor(private auth: AuthService, private router: Router) {}
 
-  submit() {
-    this.error = '';
+submit() {
+  this.error = '';
 
-    this.auth.login(this.username, this.password).subscribe({
-      next: (res: any) => {
-        if (res && res.access) {
-          // usamos siempre 'access', igual que el guard y el interceptor
-          localStorage.setItem('access', res.access);
-          if (res.refresh) {
-            localStorage.setItem('refresh', res.refresh);
-          }
-
-          // si luego quieres diferenciar admin/usuario, aquí puedes leer "res.rol"
-          this.router.navigate(['/usuario']);
-        } else {
-          this.error = 'Respuesta inválida del servidor.';
+  this.auth.login(this.username, this.password).subscribe({
+    next: (res: any) => {
+      if (res && res.access) {
+        localStorage.setItem('access', res.access);
+        if (res.refresh) {
+          localStorage.setItem('refresh', res.refresh);
         }
-      },
-      error: () => {
-        this.error = 'Credenciales incorrectas ❌';
+
+        // 🔥 Llamamos al backend para obtener rol e info
+        fetch('http://127.0.0.1:8000/api/me/', {
+          headers: { Authorization: `Bearer ${res.access}` }
+        })
+        .then(resp => resp.json())
+        .then(user => {
+          localStorage.setItem('user', JSON.stringify(user));
+
+          // Redirección según rol
+          if (user.rol === 'ADMIN') {
+            this.router.navigate(['/administrador']);
+          } else {
+            this.router.navigate(['/usuario']);
+          }
+        });
+      } else {
+        this.error = 'Respuesta inválida del servidor.';
       }
-    });
-  }
+    },
+    error: () => {
+      this.error = 'Credenciales incorrectas ❌';
+    }
+  });
+}
 }

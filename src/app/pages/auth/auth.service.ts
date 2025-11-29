@@ -13,14 +13,20 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/token/`, { username, password });
   }
 
+  saveSession(access: string, refresh: string, user: any) {
+    localStorage.setItem('access', access);
+    localStorage.setItem('refresh', refresh);
+    localStorage.setItem('user', JSON.stringify(user));
+  }
+
   logout() {
-    localStorage.removeItem('access');
-    localStorage.removeItem('refresh');
+    localStorage.clear();
     this.router.navigate(['/login']);
   }
 
-  getToken() {
-    return localStorage.getItem('access');
+  getRole() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    return user?.rol;
   }
 
   isAuthenticated(): boolean {
