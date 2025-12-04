@@ -45,7 +45,7 @@ export class Administrador implements OnInit {
       next: (data: any[]) => {
         this.usuarios = data;
         this.countUsuarios = data.length;
-        this.countEmpleados = data.filter(u => u.rol === 'empleado').length;
+        this.countEmpleados = data.filter(u => u.rol === 'EMPLEADO').length;
       },
       error: () => {
         this.error = 'No se pudieron cargar los usuarios.';
