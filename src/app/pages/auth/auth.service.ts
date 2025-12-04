@@ -9,24 +9,47 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) {}
 
+  // login al endpoint JWT de Django
   login(username: string, password: string) {
     return this.http.post(`${this.apiUrl}/token/`, { username, password });
   }
 
-  saveSession(access: string, refresh: string, user: any) {
+  // guarda info de sesión
+  saveSession(access: string, refresh: string) {
     localStorage.setItem('access', access);
-    localStorage.setItem('refresh', refresh);
+    if (refresh) {
+      localStorage.setItem('refresh', refresh);
+    }
+  }
+
+  // guarda el usuario que viene desde /me/
+  saveUser(user: any) {
     localStorage.setItem('user', JSON.stringify(user));
+  }
+
+  getCurrentUser() {
+    const raw = localStorage.getItem('user');
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  getRole() {
+    const user = this.getCurrentUser();
+    return user?.rol;
+  }
+
+  getMe() {
+    // el interceptor añadirá el Authorization automáticamente
+    return this.http.get(`${this.apiUrl}/me/`);
   }
 
   logout() {
     localStorage.clear();
     this.router.navigate(['/login']);
-  }
-
-  getRole() {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    return user?.rol;
   }
 
   isAuthenticated(): boolean {
