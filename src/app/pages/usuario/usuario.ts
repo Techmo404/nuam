@@ -12,10 +12,13 @@ import { AuthService } from '../auth/auth.service';
 })
 export class Usuario implements OnInit {
 
-  certificados: any[] = [];
+  // 🔐 Datos del usuario logueado
   usuarioActual: any = null;
-  loading: boolean = true;
-  error: string = '';
+
+  // 📊 Contadores del panel
+  countCalificaciones: number = 0;
+  countCertificados: number = 0;
+  countCertificadosValidados: number = 0;
 
   constructor(
     private api: NuamApiService,
@@ -23,30 +26,27 @@ export class Usuario implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // cargamos usuario guardado en localStorage
-    this.usuarioActual = this.auth.getCurrentUser();
+    // Cargar datos del usuario en LocalStorage
+    this.usuarioActual = JSON.parse(localStorage.getItem('user') || '{}');
 
-    // petición a /api/certificados/
+    // 1) Calificaciones
+    this.api.getCalificaciones().subscribe({
+      next: (data: any[]) => {
+        this.countCalificaciones = data.length;
+      }
+    });
+
+    // 2) Certificados
     this.api.getCertificados().subscribe({
-      next: (data) => {
-        if (this.usuarioActual && this.usuarioActual.id) {
-          // filtrar certificados por usuario
-          this.certificados = data.filter(
-            (c: any) => c.usuario === this.usuarioActual.id
-          );
-        } else {
-          this.certificados = data;
-        }
-        this.loading = false;
-      },
-      error: () => {
-        this.error = 'No se pudieron cargar los certificados.';
-        this.loading = false;
+      next: (data: any[]) => {
+        this.countCertificados = data.length;
+
+        // 🔥 Simulamos certificados validados (solo los que tienen archivo)
+        this.countCertificadosValidados = data.filter(c => c.archivo_pdf).length;
       }
     });
   }
 
-  // 🔥 NECESARIO PARA EL BOTÓN DE CERRAR SESIÓN
   logout() {
     this.auth.logout();
   }
